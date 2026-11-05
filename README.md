@@ -94,3 +94,17 @@ A safe real-money pipeline still requires all of the following:
 - Google Play purchases require Play Billing and server-side purchase-token verification. Google Play proceeds are not instant USDT deposits.
 - A successful Vite build does not prove the API, payment processor, smart contracts, or production signer are safe.
 - This package is an engineering prototype, not legal, tax, custody, or investment advice.
+
+
+## BitGo custody provider (Circle replacement)
+
+BitGo is the selected custody provider for Creator and Participant wallets. The current application does not yet authenticate to BitGo or create wallets; this repository change records the provider decision and server-side configuration contract only.
+
+1. Create a BitGo test account at https://app.bitgo-test.com and provision a test enterprise.
+2. Create a least-privilege test access token and obtain the enterprise ID. Store both as server-side secrets only.
+3. Verify BitGo support for each exact asset/network combination before configuring wallet IDs. Arbitrum One, Ethereum, Polygon and Tron are requested targets, not yet verified/enabled in this app.
+4. Complete test wallet creation, address allocation, webhook verification, deposit confirmation, withdrawal approval and reconciliation tests.
+5. Apply separately for production access at https://app.bitgo.com; use separate production credentials and IP restrictions.
+6. Deploy the custody orchestration service and durable financial database outside the static frontend. Never expose BitGo credentials or signing secrets to the browser.
+
+The existing $50 threshold and Arbitrum One payout destination remain configuration requirements, not live payout functionality. All real-money movement remains disabled until the full integration and security/compliance review are complete. See [docs/WALLET-ARCHITECTURE.md](docs/WALLET-ARCHITECTURE.md).
