@@ -97,7 +97,9 @@ export async function handler(req, res) {
         ok: true, service: 'playearn-revenue-api', mode: isProduction ? 'production-guarded' : 'development',
         productionNetwork: 'arbitrum-one', productionChainId: ARBITRUM_ONE_CHAIN_ID,
         testNetwork: 'arbitrum-sepolia', testChainId: ARBITRUM_SEPOLIA_CHAIN_ID,
-        livePaymentsEnabled: false, liveConversionEnabled: false, livePayoutsEnabled: false
+        livePaymentsEnabled: false, liveConversionEnabled: false, livePayoutsEnabled: false,
+        custodyProvider: 'bitgo', bitgoEnvironment: process.env.BITGO_ENV || 'test',
+        bitgoConfigured: Boolean(process.env.BITGO_ACCESS_TOKEN && process.env.BITGO_ENTERPRISE_ID)
       });
     }
     if (url.pathname.startsWith('/api/admin/') && process.env.VERCEL === '1') return json(res, 503, { error: 'Financial API is not enabled on serverless hosting: a durable transactional database and audited payment integrations must be configured first.' });
@@ -120,7 +122,7 @@ export async function handler(req, res) {
     if (req.method === 'POST' && url.pathname === '/api/admin/payout/evaluate') {
       if (!authorized(req)) return json(res, 401, { error: 'Admin authentication required.' });
       const s = summary(await loadLedger());
-      return json(res, 200, { eligible: s.thresholdReached, eligibleBalanceUsd: s.eligibleBalanceUsd, thresholdUsd: PAYOUT_THRESHOLD_USD, action: 'DRY_RUN_ONLY', network: 'arbitrum-one', chainId: ARBITRUM_ONE_CHAIN_ID, conversionProvider: 'NOT_CONFIGURED', transactionHash: null, message: s.thresholdReached ? 'Threshold reached. No payment provider, verified settlement feed, USDT swap integration, production signer or durable ledger is configured. No conversion or transfer was made.' : 'Threshold not reached. No conversion or transfer was made.' });
+      return json(res, 200, { eligible: s.thresholdReached, eligibleBalanceUsd: s.eligibleBalanceUsd, thresholdUsd: PAYOUT_THRESHOLD_USD, action: 'DRY_RUN_ONLY', network: 'arbitrum-one', chainId: ARBITRUM_ONE_CHAIN_ID, conversionProvider: 'BITGO_NOT_CONFIGURED', transactionHash: null, message: s.thresholdReached ? 'Threshold reached. No payment provider, verified settlement feed, USDT swap integration, production signer or durable ledger is configured. No conversion or transfer was made.' : 'Threshold not reached. No conversion or transfer was made.' });
     }
     if (req.method === 'POST' && url.pathname === '/api/admin/blockchain/test-transfer') {
       if (!authorized(req)) return json(res, 401, { error: 'Admin authentication required.' });
